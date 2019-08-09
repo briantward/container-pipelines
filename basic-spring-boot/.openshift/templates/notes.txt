@@ -1,0 +1,36 @@
+I think there are several ways we could go about execution on this.  I've come up with three alternatives I think we can discuss together.  Each has its pros and cons.  
+
+1. Build a subprocess or parallel process within your existing Jenkins pipelines.  The major disadvantage here is that every application requires its own customization and pipeline configuration.
+2. Write a custom Kubernetes controller that handles ImageStream update events and searches for dependent images (or receives events/reports from application builds) and handles them accordingly.  This is a major engineering undertaking.
+3. Use multiple buildconfigs and deploymentconfigs per application and maintain several application development streams, one primarily for Security Updates, and use either A/B or Blue/Green Deployments in production.  
+
+I'm continuing to discuss these among others within Red Hat as well. 
+
+The first option is tightly coupled to Jenkins and so may not appeal to others not using Jenkins.  The second option requires thorough Engineering and while it may prove to be a very useful platform feature, it would be complex to develop and require extensive testing and consideration.  The third option appeals to me the most because we currently have customers using this to maintain multiple development feature streams, and it could be incorporated into any existing pipeline platform.
+
+I'll expand on option 3 here:
+
+Essentially, at the end of your existing pipeline, we will have a tag of your imagestream that defines the base for your "secup" (aka Security Update) stream.  At this time, if not previously defined, we will define a new BC and DC just for security updates on this base tag.  The BC and DC here will contain Build Triggers and Deployment Triggers to push everything through all environments immediately.  However, when things get to Production, this stream will not change your Production route until you are ready.  You will have running pods in production with the latest security update, but they will not technically be reachable to external users until you have validated everything and are ready.  When you are ready, you perform either an A/B or Blue/Green update change on your route to move from the existing production pods to the new ones in your security update stream.  
+https://docs.openshift.com/container-platform/3.11/dev_guide/deployments/advanced_deployment_strategies.html#dev-guide-advanced-deployment-strategies
+
+project namespace app-dev
+- bc app-indev (v1.1.0)
+- bc app-secup (v1.0.1) (BC updated with latest dev @ end of Dev Pipeline, after Dev Image pushed to Prod)
+- dc app-indev (v1.1.0) (No Build/Deploy Triggers, relies on Jenkins Pipelines)
+- dc app-secup (v1.0.1) (Build/Deploy Trigger)
+- route http://app-indev.dev.example.com
+- route http://app-secup.dev.example.com
+project namespace app-stage
+- dc app-indev (v1.1.0)
+- dc app-secup (v1.0.1) (Build/Deploy Trigger)
+- dc app-live (v1.0.0) (always good to leave an example identical to what is in prod)
+- route http://app-indev.stage.example.com
+- route http://app-secup.stage.example.com
+- route http://app-live.stage.example.com
+project namespace app-prod
+- dc app-A (v1.0.0) (previously running from earlier indev build/deploy)
+- dc app-B (v1.0.1) (from app-secup in stage)
+- route http://app.example.com
+- switch using Blue/Green or A/B deployment strategy, controlled manually or by Pipelines
+- we name them A and B here instead of indev/secup because they will just bounce back and forth from either depending on whether indev gets to production next or secup does
+

@@ -1,0 +1,74 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  annotations:
+  labels:
+    app: basic-spring-boot
+    template: basic-spring-boot
+  name: basic-spring-boot-secup
+  namespace: basic-spring-boot-dev
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    deploymentConfig: basic-spring-boot-secup
+  strategy:
+    activeDeadlineSeconds: 21600
+    recreateParams:
+      timeoutSeconds: 600
+    resources: {}
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: basic-spring-boot
+        deploymentConfig: basic-spring-boot
+      name: basic-spring-boot
+    spec:
+      containers:
+      - env:
+        - name: JWS_ADMIN_USERNAME
+          value: ${JWS_ADMIN_USERNAME}
+        - name: JWS_ADMIN_PASSWORD
+          value: ${JWS_ADMIN_PASSWORD}
+        image: 172.30.1.1:5000/basic-spring-boot-dev/basic-spring-boot@sha256:62effedd3fd3413e9d834ae16e2e48a6e43ecacc9914df55636e2f32441e4ee7
+        imagePullPolicy: Always
+        name: basic-spring-boot
+        ports:
+        - containerPort: 8778
+          name: jolokia
+          protocol: TCP
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - curl -s 'http://localhost:8080/health' |grep -iq 'status.:.UP'
+          failureThreshold: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 60
+  test: false
+  triggers:
+  - imageChangeParams:
+      automatic: true
+      containerNames:
+      - basic-spring-boot
+      from:
+        kind: ImageStreamTag
+        name: basic-spring-boot:secup
+        namespace: basic-spring-boot-dev
+    type: ImageChange
+  - type: ConfigChange

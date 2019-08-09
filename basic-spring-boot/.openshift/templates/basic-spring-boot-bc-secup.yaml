@@ -1,0 +1,33 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  annotations:
+  labels:
+    application: basic-spring-boot
+    template: generic-java-jenkins-pipeline
+  name: basic-spring-boot-secup
+  namespace: basic-spring-boot-build
+spec:
+  failedBuildsHistoryLimit: 5
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: basic-spring-boot:secup
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    binary: {}
+    type: Binary
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: redhat-openjdk18-openshift:1.1
+        namespace: openshift
+    type: Source
+  successfulBuildsHistoryLimit: 5
+  triggers: 
+    type: "imageChange"
+    imageChange: {}

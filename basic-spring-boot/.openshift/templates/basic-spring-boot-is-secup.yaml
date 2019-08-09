@@ -1,0 +1,12 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  annotations:
+  labels:
+    application: basic-spring-boot
+    template: generic-java-jenkins-pipeline
+  name: basic-spring-boot-secup
+  namespace: basic-spring-boot-build
+spec:
+  lookupPolicy:
+    local: false
