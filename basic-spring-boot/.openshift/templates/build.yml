@@ -90,7 +90,7 @@ objects:
           namespace: ${IMAGE_STREAM_NAMESPACE}
       type: Source
     triggers:
-      type: "imageChange"
+    - type: "imageChange"
       imageChange: {}
 parameters:
 - description: The name for the application.
