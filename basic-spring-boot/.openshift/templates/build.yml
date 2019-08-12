@@ -45,6 +45,40 @@ objects:
           value: "${APPLICATION_SOURCE_REPO}"
         - name: "APPLICATION_SOURCE_REF"
           value: "${APPLICATION_SOURCE_REF}"
+- kind: "BuildConfig"
+  apiVersion: "v1"
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: "${APPLICATION_NAME}-secup-pipeline"
+    namespace: "${NAMESPACE}"
+  spec:
+    source:
+      type: Git
+      git:
+        uri: ${SOURCE_REPOSITORY_URL}
+        ref: ${SOURCE_REPOSITORY_REF}
+      contextDir: ${CONTEXT_DIR}
+    triggers:
+    - type: "GitHub"
+      github:
+        secret: ${GITHUB_WEBHOOK_SECRET}
+    - type: "ConfigChange"
+    - type: "imageChange"
+      imageChange:
+        from:
+          kind: "ImageStreamTag"
+          name: ${IMAGE_STREAM_TAG_NAME}
+          namespace: ${IMAGE_STREAM_NAMESPACE}
+    strategy:
+      type: "JenkinsPipeline"
+      jenkinsPipelineStrategy:
+        jenkinsfilePath: ${PIPELINE_SCRIPT_SECUP}
+        env:
+        - name: "APPLICATION_SOURCE_REPO"
+          value: "${APPLICATION_SOURCE_REPO}"
+        - name: "APPLICATION_SOURCE_REF"
+          value: "${APPLICATION_SOURCE_REF}"
 - apiVersion: v1
   kind: BuildConfig
   metadata:
@@ -67,6 +101,28 @@ objects:
           name: ${IMAGE_STREAM_TAG_NAME}
           namespace: ${IMAGE_STREAM_NAMESPACE}
       type: Source
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-secup
+    namespace: "${NAMESPACE}"
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${APPLICATION_NAME}:secup
+    source:
+      binary: {}
+      type: Binary
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: ${IMAGE_STREAM_TAG_NAME}
+          namespace: ${IMAGE_STREAM_NAMESPACE}
+      type: Source
 parameters:
 - description: The name for the application.
   name: APPLICATION_NAME
@@ -78,10 +134,10 @@ parameters:
 - description: Git source URI for application
   name: SOURCE_REPOSITORY_URL
   required: true
-  value: https://github.com/redhat-cop/container-pipelines.git
+  value: https://github.com/briantward/container-pipelines.git
 - description: Git branch/tag reference
   name: SOURCE_REPOSITORY_REF
-  value: "master"
+  value: "ab-secup"
 - description: Path within Git project to build; empty for root project directory.
   name: CONTEXT_DIR
   value: basic-spring-boot
@@ -95,6 +151,9 @@ parameters:
 - description: Path within Git project pointing to the pipeline run script
   name: PIPELINE_SCRIPT
   value: Jenkinsfile
+- description: Path within Git project pointing to the pipeline run script
+  name: PIPELINE_SCRIPT_SECUP
+  value: Jenkinsfile.secup
 - description: GitHub trigger secret
   from: '[a-zA-Z0-9]{8}'
   generate: expression
