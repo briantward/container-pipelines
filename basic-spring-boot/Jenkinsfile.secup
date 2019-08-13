@@ -72,13 +72,13 @@ pipeline {
         // Giving all the artifacts to OpenShift Binary Build
         // This places your artifacts into right location inside your S2I image
         // if the S2I image supports it.
-        binaryBuild(projectName: env.BUILD, buildConfigName: env.APP_NAME + "-secup", buildFromPath: "oc-build")
+        binaryBuild(projectName: env.BUILD, buildConfigName: env.APP_NAME + "secup", buildFromPath: "oc-build")
       }
     }
 
     stage('Promote from Build to Dev') {
       steps {
-        tagImage(sourceImageName: env.APP_NAME, sourceImagePath: env.BUILD + ":secup", toImagePath: env.DEV + ":secup")
+        tagImage(sourceImageName: env.APP_NAME, sourceImagePath: env.BUILD, sourceImageTag: "secup", toImagePath: env.DEV, toImageTag: "secup")
       }
     }
 
@@ -90,7 +90,7 @@ pipeline {
 
     stage('Promote from Dev to Stage') {
       steps {
-        tagImage(sourceImageName: env.APP_NAME, sourceImagePath: env.DEV + ":secup", toImagePath: env.STAGE + ":secup")
+        tagImage(sourceImageName: env.APP_NAME, sourceImagePath: env.DEV, sourceImageTag: "secup", toImagePath: env.STAGE, toImageTag: "secup")
       }
     }
 
@@ -110,7 +110,7 @@ pipeline {
 
     stage('Promote from Stage to Prod') {
       steps {
-        tagImage(sourceImageName: env.APP_NAME, sourceImagePath: env.STAGE + ":secup", toImagePath: env.PROD + ":secup")
+        tagImage(sourceImageName: env.APP_NAME, sourceImagePath: env.STAGE, sourceImageTag: "secup", toImagePath: env.PROD, toImageTag: "secup")
       }
     }
 
