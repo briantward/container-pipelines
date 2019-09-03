@@ -103,7 +103,7 @@ pipeline {
     stage('Promotion gate') {
       steps {
         script {
-          input message: 'Promote application to Production?'
+          input message: 'Promote application to Production? If application is currently running under secup service, it will update immediately!'
         }
       }
     }
@@ -119,5 +119,25 @@ pipeline {
         verifyDeployment(projectName: env.PROD, targetApp: env.APP_NAME + "-secup")
       }
     }
+
+    stage('Switch route to new version') {
+      steps {
+        script {
+          openshift.withCluster() {
+            openshift.withProject(PROD) {
+              def activeService = openshift.selector("route/${APP_NAME}").object().spec.to.name
+              if (activeService == "${APP_NAME}") {
+                def secService = "${APP_NAME}-secup"
+                input message: "Scale up ${PROD} service from ${activeService} to ${secService} deployment?"
+                def route = openshift.selector("route/${APP_NAME}").object()
+                route.spec.to.name = "${newService}"
+                openshift.apply(route)
+              }
+            }
+          }
+        }
+      }
+    }
+
   }
 }

@@ -64,6 +64,11 @@ objects:
       github:
         secret: ${GITHUB_WEBHOOK_SECRET}
     - type: "ConfigChange"
+    - type: "imageChange"
+        from:
+          kind: "ImageStreamTag"
+          name: ${IMAGE_STREAM_TAG_NAME}
+          namespace: ${IMAGE_STREAM_NAMESPACE}
     strategy:
       type: "JenkinsPipeline"
       jenkinsPipelineStrategy:
@@ -117,9 +122,6 @@ objects:
           name: ${IMAGE_STREAM_TAG_NAME}
           namespace: ${IMAGE_STREAM_NAMESPACE}
       type: Source
-    triggers:
-    - type: "imageChange"
-      imageChange: {}
 parameters:
 - description: The name for the application.
   name: APPLICATION_NAME
