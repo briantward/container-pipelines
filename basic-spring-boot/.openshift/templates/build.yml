@@ -65,6 +65,7 @@ objects:
         secret: ${GITHUB_WEBHOOK_SECRET}
     - type: "ConfigChange"
     - type: "imageChange"
+      imageChange:
         from:
           kind: "ImageStreamTag"
           name: ${IMAGE_STREAM_TAG_NAME}
