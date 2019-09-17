@@ -128,9 +128,9 @@ pipeline {
               def activeService = openshift.selector("route/${APP_NAME}").object().spec.to.name
               if (activeService == "${APP_NAME}") {
                 def secService = "${APP_NAME}-secup"
-                input message: "Scale up ${PROD} service from ${activeService} to ${secService} deployment?"
+                input message: "Switch ${PROD} service from ${activeService} to ${secService} deployment?"
                 def route = openshift.selector("route/${APP_NAME}").object()
-                route.spec.to.name = "${newService}"
+                route.spec.to.name = "${secService}"
                 openshift.apply(route)
               }
             }
