@@ -1,22 +1,37 @@
-# A Sample OpenShift Pipeline for a Spring Boot Application
+# A Sample OpenShift Pipeline for a Spring Boot Application with Parallel Pipelines
 
-This example demonstrates how to implement a full end-to-end Jenkins Pipeline for a Java application in OpenShift Container Platform. This sample demonstrates the following capabilities:
+This example is an extension of the basic-spring-boot example and demonstrates how to implement a full end-to-end Jenkins Pipeline for a Java application in OpenShift Container Platform, with the addition of showing a sample parallel pipeline dedicated to container rebuilds. This sample demonstrates the following capabilities:
 
 * Deploying an integrated Jenkins server inside of OpenShift
 * Running both custom and oob Jenkins slaves as pods in OpenShift
 * "One Click" instantiation of a Jenkins Pipeline using OpenShift's Jenkins Pipeline Strategy feature
 * Building a Jenkins pipeline with library functions from our [pipeline-library](https://github.com/redhat-cop/pipeline-library)
 * Automated rollout using the [openshift-appler](https://github.com/redhat-cop/openshift-applier) project.
+* Triggering a parallel pipeline on base image update from upstream
+* Switching A/B deployment from the old container build to the new container build with the base image update.
+
+The critical use cases for this type of setup would be:
+
+* CVE updates to your base image
+* bug fix updates to your base image
+* long appdev cycles that require base image updates to the existing production runtime before the next dev release cycle
+* stable applications with infrequent dev cycles that require "patchin" base images
 
 ## Automated Deployment
 
 This quickstart can be deployed quickly using Ansible. Here are the steps.
 
-1. Clone [this repo](https://github.com/redhat-cop/container-pipelines)
-2. `cd container-pipelines/parallel-spring-boot`
-3. Run `ansible-galaxy install -r requirements.yml --roles-path=galaxy`
-2. Log into an OpenShift cluster, then run the following command.
+Use a special container that has required dependencies (git, ansible) to run this deployment (this is not required but provided
+to ensure ansible version capatability to openshift-applier):
+
 ```
+$ oc run -i -t tool-box-test --image=quay.io/redhat-cop/tool-box:v1.15 --rm bash
+```
+
+$ git clone -b parallel-spring-boot-btw https://github.com/briantward/container-pipelines
+$ cd container-pipelines/parallel-spring-boot/
+$ ansible-galaxy install -r requirements.yml --roles-path=galaxy
+$ oc login -u ${USER_NAME} -p ${USER_PASSWORD} ${CLUSTER_API}
 $ ansible-playbook -i ./.applier/ galaxy/openshift-applier/playbooks/openshift-cluster-seed.yml
 ```
 
