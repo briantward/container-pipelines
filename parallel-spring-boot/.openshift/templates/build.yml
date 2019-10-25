@@ -144,7 +144,7 @@ parameters:
 - description: Source code repo for demo app
   name: APPLICATION_SOURCE_REPO
   required: true
-  value: https://github.com/redhat-cop/spring-rest.git
+  value: https://github.com/briantward/spring-rest.git
 - description: Source code branch for demo app
   name: APPLICATION_SOURCE_REF
   value: master

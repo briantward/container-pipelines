@@ -3,7 +3,7 @@ sb_build_namespace: parallel-spring-boot-build
 sb_dev_namespace: parallel-spring-boot-dev
 sb_stage_namespace: parallel-spring-boot-stage
 sb_prod_namespace: parallel-spring-boot-prod
-sb_application_repository_url: "https://github.com/redhat-cop/spring-rest.git"
+sb_application_repository_url: "https://github.com/briantward/spring-rest.git"
 sb_application_repository_ref: master
 sb_application_readiness_response: "status.:.UP"
 sb_application_readiness_path: "/health"
