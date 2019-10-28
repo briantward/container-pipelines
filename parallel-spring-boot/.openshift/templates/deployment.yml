@@ -146,14 +146,14 @@ objects:
   spec:
     replicas: 1
     selector:
-      deploymentConfig: ${APPLICATION_NAME}
+      deploymentConfig: ${APPLICATION_NAME}-secup
     strategy:
       type: Recreate
     template:
       metadata:
         labels:
           app: ${APPLICATION_NAME}
-          deploymentConfig: ${APPLICATION_NAME}
+          deploymentConfig: ${APPLICATION_NAME}-secup
         name: ${APPLICATION_NAME}
       spec:
         containers:
